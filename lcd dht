@@ -1,0 +1,45 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHTesp.h>
+
+#define DHT_PIN 27  // DHT11 nối chân GPIO 27
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // Địa chỉ LCD 0x27, loại 16x2
+DHTesp dht;  // Khởi tạo đối tượng cảm biến
+
+void setup() {
+  Serial.begin(115200);
+  
+  Wire.begin(21, 22);       // SDA = 21, SCL = 22
+  Wire.setClock(100000);    // Giảm tốc độ I2C cho ổn định
+  lcd.init();               // Khởi động LCD
+  lcd.backlight();          // Bật đèn nền LCD
+  
+  dht.setup(DHT_PIN, DHTesp::DHT11); // Cấu hình DHT11
+}
+
+void loop() {
+  TempAndHumidity data = dht.getTempAndHumidity();
+  
+  // In ra Serial Monitor
+  Serial.print("Nhiet do: ");
+  Serial.print(data.temperature);
+  Serial.print(" *C | Do am: ");
+  Serial.print(data.humidity);
+  Serial.println(" %");
+
+  // Hiển thị lên LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Nhiet do: ");
+  lcd.print(data.temperature, 1); // 1 chữ số sau dấu phẩy
+  lcd.print((char)223);            // In ký tự độ °
+  lcd.print("C");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Do am: ");
+  lcd.print(data.humidity, 1);
+  lcd.print("%");
+
+  delay(1000);  // Chờ 2 giây
+}
