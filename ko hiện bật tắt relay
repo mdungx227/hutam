@@ -1,0 +1,257 @@
+// Blynk auth
+#define BLYNK_TEMPLATE_ID "TMPL6Yidw0WFU"
+#define BLYNK_TEMPLATE_NAME "Máy hút ẩm siêu thông minh"
+#define BLYNK_AUTH_TOKEN "1MxZncUvRRcJLxS0uLKrMwVQn1ry3EoP"
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+
+// Thông tin WiFi
+char ssid[] = "Khoi Nguyen";
+char pass[] = "abcde12345";
+
+// LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// DHT11
+#define DHTPIN 27
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+// Relay
+#define RELAY_PIN 26
+
+// Biến điều khiển từ Blynk
+bool autoMode = false;  // Biến hệ thống tự động ON/OFF (V2)
+bool manualControl = false; // Bật/tắt relay thủ công (V3)
+
+BlynkTimer timer;
+
+void sendSensor(float h, float t) {
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Lỗi đọc DHT11");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Loi cam bien");
+    lcd.setCursor(0, 1);
+    lcd.print("DHT11");
+    return;
+  }
+
+  // Gửi dữ liệu lên Blynk
+  Blynk.virtualWrite(V0, (int)h); // Độ ẩm
+  Blynk.virtualWrite(V1, t);      // Nhiệt độ
+
+  // Hiển thị Serial
+  Serial.print("Nhiet do: ");
+  Serial.print(t);
+  Serial.print(" *C\tDo am: ");
+  Serial.print(h);
+  Serial.println(" %");
+
+  // Hiển thị LCD
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Nhiet do: ");
+  lcd.print(t);
+  lcd.print("C");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Do am: ");
+  lcd.print(h);
+  lcd.print("%");
+}
+
+// Nhận công tắc tự động từ V2
+BLYNK_WRITE(V4) {
+  int value = param.asInt();
+  autoMode = (value == 1);
+  Serial.print("He thong tu dong: ");
+  Serial.println(autoMode ? "ON" : "OFF");
+}
+
+// Nhận nút điều khiển thủ công từ V3
+BLYNK_WRITE(V3) {
+  int value = param.asInt();
+  manualControl = (value == 1);
+  if (manualControl) {
+    digitalWrite(RELAY_PIN, HIGH); // Bật relay thủ công
+    Serial.println("Relay bat (Manual)");
+  } else {
+    digitalWrite(RELAY_PIN, LOW);  // Tắt relay thủ công
+    Serial.println("Relay tat (Manual)");
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  Wire.begin(21, 22); // SDA=21, SCL=22
+  lcd.init();
+  lcd.backlight();
+  
+  dht.begin();
+
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW); // Relay tắt ban đầu
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+  lcd.setCursor(0, 0);
+  lcd.print("Dang ket noi...");
+
+  timer.setInterval(5000L, []() {
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+    sendSensor(h, t);
+
+    // Nếu đang ở chế độ auto (V2) và KHÔNG bị bật thủ công (V3)
+    if (!manualControl && autoMode ) {
+      if (h > 63) {
+        digitalWrite(RELAY_PIN, HIGH); // Bật relay// Blynk auth
+#define BLYNK_TEMPLATE_ID "TMPL6Yidw0WFU"
+#define BLYNK_TEMPLATE_NAME "Máy hút ẩm siêu thông minh"
+#define BLYNK_AUTH_TOKEN "1MxZncUvRRcJLxS0uLKrMwVQn1ry3EoP"
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+
+// WiFi
+char ssid[] = "Khoi Nguyen";
+char pass[] = "abcde12345";
+
+// LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// DHT11
+#define DHTPIN 27
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+// Relay
+#define RELAY_PIN 26
+
+bool autoMode = false;       // V4: chế độ tự động
+bool manualControl = false;  // V3: điều khiển thủ công
+
+BlynkTimer timer;
+
+void sendSensor(int h, int t) {
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Lỗi đọc DHT11");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Loi cam bien");
+    lcd.setCursor(0, 1);
+    lcd.print("DHT11");
+    return;
+  }
+// Gửi dữ liệu lên Blynk
+  Blynk.virtualWrite(V0, (int)h); // Độ ẩm
+  Blynk.virtualWrite(V1, t);      // Nhiệt độ
+
+// Hiển thị Serial
+  Serial.print("Nhiet do: ");
+  Serial.print(t);
+  Serial.print(" *C\tDo am: ");
+  Serial.print(h);
+  Serial.println(" %");
+// Lcd
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Nhiet do: ");
+  lcd.print(t);
+  lcd.print("*C");
+  lcd.setCursor(0, 1);
+  lcd.print("Do am: ");
+  lcd.print(h);
+  lcd.print("%");
+}
+
+// Blynk: bật/tắt chế độ tự động (V4)
+BLYNK_WRITE(V4) {
+  int value = param.asInt();
+  autoMode = (value == 1);
+  Serial.println(autoMode ? "AutoMode ON" : "AutoMode OFF");
+}
+
+// Blynk: bật/tắt relay thủ công (V3)
+BLYNK_WRITE(V3) {
+  int value = param.asInt();
+  manualControl = (value == 1);
+
+  if (manualControl) {
+    digitalWrite(RELAY_PIN, HIGH); 
+    Blynk.virtualWrite(V2, 1);     // Gửi trạng thái bật relay lên V2
+    Serial.println("Relay bat (Manual)");
+  } else {
+    digitalWrite(RELAY_PIN, LOW);  
+    Blynk.virtualWrite(V2, 0);     // Gửi trạng thái tắt relay lên V2
+    Serial.println("Relay tat (Manual)");
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  Wire.begin(21, 22);
+  lcd.init();
+  lcd.backlight();
+  
+  dht.begin();
+
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW);
+  Blynk.virtualWrite(V2, 0); // Ban đầu gửi relay tắt
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+  lcd.setCursor(0, 0);
+  lcd.print("Dang ket noi...");
+
+  timer.setInterval(5000L, []() {
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+    sendSensor(h, t);
+
+    if (!manualControl) { // Nếu V3 chưa bật
+      if (autoMode) {      // Và V4 đang bật
+        if (h > 78) {
+          digitalWrite(RELAY_PIN, HIGH);
+          Blynk.virtualWrite(V2, 1); // Gửi trạng thái bật
+          Serial.println("Relay bat (Auto)");
+        } else {
+          digitalWrite(RELAY_PIN, LOW);
+          Blynk.virtualWrite(V2, 0); // Gửi trạng thái tắt
+          Serial.println("Relay tat (Auto)");
+        }
+      }
+    }
+    // Nếu manualControl đang bật thì giữ nguyên trạng thái relay
+  });
+}
+
+void loop() {
+  Blynk.run();
+  timer.run();
+}
+
+        Serial.println("Relay bat (Auto)");
+      } else {
+        digitalWrite(RELAY_PIN, LOW); // Tắt relay
+        Serial.println("Relay tat (Auto)");
+      }
+    }
+  });
+}
+
+void loop() {
+  Blynk.run();
+  timer.run();
+}
